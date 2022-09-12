@@ -180,10 +180,14 @@ using System.ComponentModel.DataAnnotations.Schema;
 using GizmoFort.Connector.ERPNext.PublicTypes;
 using GizmoFort.Connector.ERPNext.WrapperTypes;
 using _DockType = GizmoFort.Connector.ERPNext.PublicTypes.DocType;
+using System.Text.Json;
 
 namespace " + @namespace + @"
 {
-    public partial class " + modelClassName + @" : ERPNextObjectBase
+    public partial class " + modelClassName + @" : 
+        ERPNextObjectBase, 
+        ISerializePropertiesToJson, 
+        IDeserializePropertiesFromJson<ERPNextObjectBase>
     {
         public " + modelClassName + @"() : this(new ERPObject(_DockType." + doctypeEnumValue + @")) { }
         public " + modelClassName + @"(ERPObject obj) : base(obj) { }
@@ -191,6 +195,34 @@ namespace " + @namespace + @"
         public static string? GetColumnName(string propertyName)
         {
             return ERPNextObjectBase.GetColumnName<" + modelClassName + @">(propertyName);
+        }
+
+        public static string? GetPropertyName(string columnName)
+        {
+            return ERPNextObjectBase.GetPropertyName<" + modelClassName + @">(columnName);
+        }
+
+        public string Serialize()
+        {
+            //
+            // serializtion is more complex... will need to serialize the data
+            // property ONLY, but map the names to the exposed property names
+            //
+            var options = new JsonSerializerOptions
+            {
+                DictionaryKeyPolicy = new CustomJsonSerializationPolicy<" + modelClassName + @">()
+            };
+            return JsonSerializer.Serialize(value: this.data,
+                                            options: options);
+        }
+
+        public static " + modelClassName + @"? Deserialize(string json)
+        {
+            //
+            // deserialization is straight-forward... setters will only be called if values
+            // are included in the json string
+            //
+            return JsonSerializer.Deserialize<" + modelClassName + @">(json: json);
         }
 " + properties + @"
 
@@ -306,8 +338,8 @@ namespace " + @namespace + @"
             }
 
             //
-            // replace doctypes in:
-            // gizmofort.connector.erpnext\Libs\GizmoFort.Connector.ERPNext\PublicTypes\DocType.cs
+            // replace main servies file in:
+            // GizmoFort.Connector.ERPNext\PublicInterfaces\ERPNextServices.cs
             //
             {
                 Console.WriteLine(@"Replace main servies file at GizmoFort.Connector.ERPNext\PublicInterfaces\ERPNextServices.cs...");

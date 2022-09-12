@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text.Json;
 using GizmoFort.Connector.ERPNext.PublicTypes;
 using GizmoFort.Connector.ERPNext.Utils;
 
@@ -40,7 +42,6 @@ namespace GizmoFort.Connector.ERPNext.WrapperTypes
             return (T)Enum.Parse(typeof(T), enumString, true);
         }
 
-
         //
         // reference: https://stackoverflow.com/questions/26429612/retrieve-name-value-from-columnattribute-for-entity-framework-batch-deletes
         //
@@ -65,26 +66,62 @@ namespace GizmoFort.Connector.ERPNext.WrapperTypes
 
             if (property == null)
             {
-                throw new Exception("PropertyName not found."); // bad example
+                throw new Exception("propertyName not found."); // bad example
             }
             else
             {
                 result = property.Name;  //if no column attribute exists;
-
-                var attributes = property.GetCustomAttributes();
-
-                var attribute = attributes
-                                  .Where(a => a is ColumnAttribute)
-                                  .FirstOrDefault() as ColumnAttribute;
-
-                if (attribute != null)
-                {
+                var attribute = property.GetCustomAttributes<ColumnAttribute>()
+                                        .FirstOrDefault() as ColumnAttribute;
+                if (attribute is not null)
                     result = attribute.Name;
-                }
             }
             return result;
         }
 
+        public static string GetPropertyName<T>(string columnName)
+        {
+            if (string.IsNullOrWhiteSpace(columnName))
+            {
+                throw new ArgumentNullException(nameof(columnName), "'columnName' cannot be null or empty.");
+            }
+
+            var classType = typeof(T);
+            var properties = classType.GetProperties(BindingFlags.GetProperty
+                                                     | BindingFlags.Instance
+                                                     | BindingFlags.Public);
+
+            PropertyInfo? propertyWithAttribute = null;
+            foreach (var property in properties)
+            {
+                var columnAttribute = (ColumnAttribute?)property
+                                                           .GetCustomAttributes(attributeType: typeof(ColumnAttribute), inherit: false)
+                                                           .FirstOrDefault();
+                if ((columnAttribute is not null)
+                    && (!string.IsNullOrEmpty(columnAttribute.Name))
+                    && (columnAttribute.Name == columnName))
+                {
+                    propertyWithAttribute = property;
+                    break;
+                }
+            }
+
+            if (propertyWithAttribute == null)
+            {
+                throw new Exception("columnName not found."); // bad example
+            }
+
+            return propertyWithAttribute.Name;
+
+        }
+
+        protected class CustomJsonSerializationPolicy<T> : JsonNamingPolicy
+        {
+            public override string ConvertName(string columnName)
+            {
+                return GetPropertyName<T>(columnName);
+            }
+        }
 
     }
 }
