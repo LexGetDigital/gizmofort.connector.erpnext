@@ -144,6 +144,7 @@ namespace GizmoFort.Connector.ERPNext.WrapperTypes
 
             var enhancedOptions = _options ?? new JsonSerializerOptions();
             enhancedOptions.Converters.Add(new CustomDateTimeConverter());
+            enhancedOptions.Converters.Add(new CustomDateTimeOffsetConverter());
             var result = typeof(JsonSerializer)
                             .GetMethod("Deserialize", new Type[] { typeof(string), typeof(JsonSerializerOptions) } )!
                             .MakeGenericMethod(new Type[] { typeof(T) })
@@ -163,7 +164,7 @@ namespace GizmoFort.Connector.ERPNext.WrapperTypes
 
             var enhancedOptions = _options ?? new JsonSerializerOptions();
             enhancedOptions.Converters.Add(new CustomDateTimeConverter());
-
+            enhancedOptions.Converters.Add(new CustomDateTimeOffsetConverter());
             return JsonSerializer.Deserialize(value, type, enhancedOptions);
 
         }
@@ -183,8 +184,8 @@ namespace GizmoFort.Connector.ERPNext.WrapperTypes
 
             var enhancedOptions = _options ?? new JsonSerializerOptions();
             enhancedOptions.DictionaryKeyPolicy = (JsonNamingPolicy)policy;
+            enhancedOptions.Converters.Add(new CustomDateTimeOffsetConverter());
             enhancedOptions.Converters.Add(new CustomDateTimeConverter());
-
             var castValue = (ERPNextObjectBase)value;
 
             return JsonSerializer.Serialize(castValue.Object.Data, enhancedOptions);

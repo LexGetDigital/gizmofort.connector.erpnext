@@ -23,7 +23,7 @@ namespace GizmoFort.Connector.ERPNext.Tests.TestCases
                 CustomerName = test_customer_name,
                 CustomerGroup = "Individual",
                 Website = test_customer_website,
-                Territory = "Australia"
+                Territory = "United States"
             };
 
             #region Test - Insert

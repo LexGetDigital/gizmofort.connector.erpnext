@@ -11,7 +11,7 @@ namespace GizmoFort.Connector.ERPNext.WrapperTypes
 
         public override void Write(Utf8JsonWriter writer, DateTime date, JsonSerializerOptions options)
         {
-            writer.WriteStringValue(date.ToUniversalTime().ToString("o")); //ISO-8601 date format string
+            writer.WriteStringValue(date.ToUniversalTime().ToString("o").Replace("+00:00", "Z")); //ISO-8601 date format string
         }
 
         public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

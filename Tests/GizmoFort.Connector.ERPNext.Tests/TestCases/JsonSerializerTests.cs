@@ -106,7 +106,8 @@ namespace GizmoFort.Connector.ERPNext.Tests.TestCases
 
             // Assert 
 
-            var actualDateTime = customer.Creation;
+            var actualDateTimeOffset = customer.Creation;
+
             var expectedDateTimeLocal = DateTime.Parse("2022-09-12T14:46:12.8456190Z"); //local by default
             var expectedDateTimeOffsetLocal = new DateTimeOffset(expectedDateTimeLocal);
             var expectedDateTimeUtc = expectedDateTimeLocal.ToUniversalTime();
@@ -116,17 +117,17 @@ namespace GizmoFort.Connector.ERPNext.Tests.TestCases
             // DateTimeOffset rocks!
             //
             Assert.Equal(expectedDateTimeOffsetLocal, expectedDateTimeOffsetUtc);
+            Assert.Equal(expectedDateTimeUtc, actualDateTimeOffset);
+            Assert.Equal(expectedDateTimeLocal, actualDateTimeOffset);
+            Assert.True(expectedDateTimeUtc == actualDateTimeOffset);
+            Assert.True(expectedDateTimeLocal == actualDateTimeOffset);
 
             //
-            // DateTime sucks...
+            // DateTime sucks... cannot be compared if kind is different between matched instances
             //
+            Assert.NotEqual(expectedDateTimeLocal.Kind, expectedDateTimeUtc.Kind);
             Assert.NotEqual(expectedDateTimeLocal.Ticks, expectedDateTimeUtc.Ticks);
             Assert.False(expectedDateTimeLocal == expectedDateTimeUtc);
-            Assert.Equal(expectedDateTimeUtc, actualDateTime);
-            Assert.NotEqual(expectedDateTimeLocal, actualDateTime);
-            Assert.True(expectedDateTimeUtc == actualDateTime);
-            Assert.False(expectedDateTimeLocal == actualDateTime);
-
 
             Assert.Equal("Generic Test Customer", customer.Name);
             Assert.Equal("admin@my.erpnext.com", customer.Owner);

@@ -521,7 +521,7 @@ namespace GizmoFort.Connector.ERPNext.PublicInterfaces
                 "decimal" => "decimal",
                 "text" => "string",
                 "varchar" => "string",
-                "datetime" => "DateTime",
+                "datetime" => "DateTimeOffset",
                 "time" => "TimeSpan",
                 "date" => "DateOnly",
                 "bigint" => "long",
