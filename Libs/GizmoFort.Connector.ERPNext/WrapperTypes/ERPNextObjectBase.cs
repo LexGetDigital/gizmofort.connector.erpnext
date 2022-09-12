@@ -72,13 +72,6 @@ namespace GizmoFort.Connector.ERPNext.WrapperTypes
                     {
                         lookup.Add(property.Name, columnAttribute.Name);
                     }
-                    else
-                    {
-                        //
-                        // default to the property name to no other column name is specified
-                        //
-                        lookup.Add(property.Name, property.Name);
-                    }
                 }
 
                 _cachedLookupColumnNameByPropertyName = lookup;
@@ -86,7 +79,10 @@ namespace GizmoFort.Connector.ERPNext.WrapperTypes
 
             if (!_cachedLookupColumnNameByPropertyName.ContainsKey(propertyName))
             {
-                throw new Exception("propertyName not found."); // bad example
+                //
+                // return the property name by default
+                //
+                return propertyName;
             }
 
             return _cachedLookupColumnNameByPropertyName[propertyName];
@@ -126,7 +122,10 @@ namespace GizmoFort.Connector.ERPNext.WrapperTypes
 
             if (!_cachedLookupPropertyNameByColumnName.ContainsKey(columnName))
             {
-                throw new Exception("columnName not found."); // bad example
+                //
+                // return the column name by default
+                //
+                return columnName;
             }
 
             return _cachedLookupPropertyNameByColumnName[columnName];
