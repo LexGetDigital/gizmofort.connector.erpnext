@@ -45,40 +45,54 @@ namespace GizmoFort.Connector.ERPNext.WrapperTypes
         //
         // reference: https://stackoverflow.com/questions/26429612/retrieve-name-value-from-columnattribute-for-entity-framework-batch-deletes
         //
+        private static IDictionary<string, string>? _cachedLookupColumnNameByPropertyName = null;
         public static string? GetColumnName<T>(string propertyName)
         {
-            string? result = null;
-
             if (string.IsNullOrWhiteSpace(propertyName))
             {
                 throw new ArgumentNullException(nameof(propertyName), "'propertyName' cannot be null or empty.");
             }
 
-            var classType = typeof(T);
-            var properties = classType.GetProperties(BindingFlags.GetProperty
-                                                     | BindingFlags.Instance
-                                                     | BindingFlags.Public);
+            if (_cachedLookupColumnNameByPropertyName is null)
+            {
+                var lookup = new Dictionary<string, string>();
 
-            var property = properties
-              .Where(p => p.Name.Equals(propertyName,
-                                        StringComparison.CurrentCultureIgnoreCase))
-              .FirstOrDefault();
+                var classType = typeof(T);
+                var properties = classType.GetProperties(BindingFlags.GetProperty
+                                                         | BindingFlags.Instance
+                                                         | BindingFlags.Public);
 
-            if (property == null)
+                foreach (var property in properties)
+                {
+                    var columnAttribute = (ColumnAttribute?)property
+                                                               .GetCustomAttributes(attributeType: typeof(ColumnAttribute), inherit: false)
+                                                               .FirstOrDefault();
+                    if ((columnAttribute is not null)
+                        && (!string.IsNullOrEmpty(columnAttribute.Name)))
+                    {
+                        lookup.Add(property.Name, columnAttribute.Name);
+                    }
+                    else
+                    {
+                        //
+                        // default to the property name to no other column name is specified
+                        //
+                        lookup.Add(property.Name, property.Name);
+                    }
+                }
+
+                _cachedLookupColumnNameByPropertyName = lookup;
+            }
+
+            if (!_cachedLookupColumnNameByPropertyName.ContainsKey(propertyName))
             {
                 throw new Exception("propertyName not found."); // bad example
             }
-            else
-            {
-                result = property.Name;  //if no column attribute exists;
-                var attribute = property.GetCustomAttributes<ColumnAttribute>()
-                                        .FirstOrDefault() as ColumnAttribute;
-                if (attribute is not null)
-                    result = attribute.Name;
-            }
-            return result;
+
+            return _cachedLookupColumnNameByPropertyName[propertyName];
         }
 
+        private static IDictionary<string, string>? _cachedLookupPropertyNameByColumnName = null;
         public static string GetPropertyName<T>(string columnName)
         {
             if (string.IsNullOrWhiteSpace(columnName))
@@ -86,32 +100,36 @@ namespace GizmoFort.Connector.ERPNext.WrapperTypes
                 throw new ArgumentNullException(nameof(columnName), "'columnName' cannot be null or empty.");
             }
 
-            var classType = typeof(T);
-            var properties = classType.GetProperties(BindingFlags.GetProperty
-                                                     | BindingFlags.Instance
-                                                     | BindingFlags.Public);
-
-            PropertyInfo? propertyWithAttribute = null;
-            foreach (var property in properties)
+            if (_cachedLookupPropertyNameByColumnName is null)
             {
-                var columnAttribute = (ColumnAttribute?)property
-                                                           .GetCustomAttributes(attributeType: typeof(ColumnAttribute), inherit: false)
-                                                           .FirstOrDefault();
-                if ((columnAttribute is not null)
-                    && (!string.IsNullOrEmpty(columnAttribute.Name))
-                    && (columnAttribute.Name == columnName))
+                var lookup = new Dictionary<string, string>();
+
+                var classType = typeof(T);
+                var properties = classType.GetProperties(BindingFlags.GetProperty
+                                                         | BindingFlags.Instance
+                                                         | BindingFlags.Public);
+
+                foreach (var property in properties)
                 {
-                    propertyWithAttribute = property;
-                    break;
+                    var columnAttribute = (ColumnAttribute?)property
+                                                               .GetCustomAttributes(attributeType: typeof(ColumnAttribute), inherit: false)
+                                                               .FirstOrDefault();
+                    if ((columnAttribute is not null)
+                        && (!string.IsNullOrEmpty(columnAttribute.Name)))
+                    {
+                        lookup.Add(columnAttribute.Name, property.Name);
+                    }
                 }
+
+                _cachedLookupPropertyNameByColumnName = lookup;
             }
 
-            if (propertyWithAttribute == null)
+            if (!_cachedLookupPropertyNameByColumnName.ContainsKey(columnName))
             {
                 throw new Exception("columnName not found."); // bad example
             }
 
-            return propertyWithAttribute.Name;
+            return _cachedLookupPropertyNameByColumnName[columnName];
 
         }
 
