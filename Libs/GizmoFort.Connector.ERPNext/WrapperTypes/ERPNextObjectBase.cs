@@ -46,7 +46,7 @@ namespace GizmoFort.Connector.ERPNext.WrapperTypes
         // reference: https://stackoverflow.com/questions/26429612/retrieve-name-value-from-columnattribute-for-entity-framework-batch-deletes
         //
         private static IDictionary<string, string>? _cachedLookupColumnNameByPropertyName = null;
-        public static string? GetColumnName<T>(string propertyName)
+        public static string GetColumnName<T>(string propertyName)
         {
             if (string.IsNullOrWhiteSpace(propertyName))
             {
@@ -132,13 +132,64 @@ namespace GizmoFort.Connector.ERPNext.WrapperTypes
 
         }
 
-        protected class CustomJsonSerializationPolicy<T> : JsonNamingPolicy
+        public static T? Deserialize<T>(string value, JsonSerializerOptions? _options = null)
         {
-            public override string ConvertName(string columnName)
-            {
-                return GetPropertyName<T>(columnName);
-            }
+            //
+            // deserialization is straight-forward... setters will only be called if values
+            // are included in the json string
+            //
+            // also, the date time formats TO ERPNext/mariadb will be in the
+            // server timezone. So set the server to UTC and convert assuming UTC
+            //
+
+            var enhancedOptions = _options ?? new JsonSerializerOptions();
+            enhancedOptions.Converters.Add(new CustomDateTimeConverter());
+            var result = typeof(JsonSerializer)
+                            .GetMethod("Deserialize", new Type[] { typeof(string), typeof(JsonSerializerOptions) } )!
+                            .MakeGenericMethod(new Type[] { typeof(T) })
+                            .Invoke(null, new object[] { value, enhancedOptions });
+            return (T?)result;
         }
+
+        public static object? Deserialize(string value, Type type, JsonSerializerOptions? _options = null)
+        {
+            //
+            // deserialization is straight-forward... setters will only be called if values
+            // are included in the json string
+            //
+            // also, the date time formats TO ERPNext/mariadb will be in the
+            // server timezone. So set the server to UTC and convert assuming UTC
+            //
+
+            var enhancedOptions = _options ?? new JsonSerializerOptions();
+            enhancedOptions.Converters.Add(new CustomDateTimeConverter());
+
+            return JsonSerializer.Deserialize(value, type, enhancedOptions);
+
+        }
+
+        public static string Serialize(ERPNextObjectBase value, JsonSerializerOptions? _options = null)
+        {
+            //
+            // serializtion is more complex... will need to serialize the data
+            // property ONLY, but map the names to the exposed property names
+            //
+            // also, the date time formats FROM ERPNext/mariadb will be in the
+            // server timezone. So set the server to UTC and convert assuming UTC
+            //
+
+            Type policyGenericWithType = typeof(CustomJsonNamingPolicy<>).MakeGenericType(new Type[] { value.GetType() });
+            var policy = Activator.CreateInstance(policyGenericWithType)!;
+
+            var enhancedOptions = _options ?? new JsonSerializerOptions();
+            enhancedOptions.DictionaryKeyPolicy = (JsonNamingPolicy)policy;
+            enhancedOptions.Converters.Add(new CustomDateTimeConverter());
+
+            var castValue = (ERPNextObjectBase)value;
+
+            return JsonSerializer.Serialize(castValue.Object.Data, enhancedOptions);
+        }
+
 
     }
 }

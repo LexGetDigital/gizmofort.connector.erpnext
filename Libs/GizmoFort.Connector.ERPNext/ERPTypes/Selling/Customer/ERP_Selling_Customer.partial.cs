@@ -12,10 +12,7 @@ using System.Text.Json;
 
 namespace GizmoFort.Connector.ERPNext.ERPTypes.Selling.Customer
 {
-    public partial class ERP_Selling_Customer : 
-        ERPNextObjectBase, 
-        ISerializePropertiesToJson, 
-        IDeserializePropertiesFromJson<ERPNextObjectBase>
+    public partial class ERP_Selling_Customer : ERPNextObjectBase
     {
         public ERP_Selling_Customer() : this(new ERPObject(_DockType.Selling_Customer)) { }
         public ERP_Selling_Customer(ERPObject obj) : base(obj) { }
@@ -28,29 +25,6 @@ namespace GizmoFort.Connector.ERPNext.ERPTypes.Selling.Customer
         public static string? GetPropertyName(string columnName)
         {
             return ERPNextObjectBase.GetPropertyName<ERP_Selling_Customer>(columnName);
-        }
-
-        public string Serialize()
-        {
-            //
-            // serializtion is more complex... will need to serialize the data
-            // property ONLY, but map the names to the exposed property names
-            //
-            var options = new JsonSerializerOptions
-            {
-                DictionaryKeyPolicy = new CustomJsonSerializationPolicy<ERP_Selling_Customer>()
-            };
-            return JsonSerializer.Serialize(value: this.data,
-                                            options: options);
-        }
-
-        public static ERP_Selling_Customer? Deserialize(string json)
-        {
-            //
-            // deserialization is straight-forward... setters will only be called if values
-            // are included in the json string
-            //
-            return JsonSerializer.Deserialize<ERP_Selling_Customer>(json: json);
         }
 
         [Column("name")]

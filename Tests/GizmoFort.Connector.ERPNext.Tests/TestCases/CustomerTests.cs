@@ -19,7 +19,7 @@ namespace GizmoFort.Connector.ERPNext.Tests.TestCases
 
             var initial_data = new ERP_Selling_Customer
             {
-                CustomerType2 = ERP_Selling_Customer.CustomerTypeEnum.Individual,
+                CustomerTypeViaEnum = ERP_Selling_Customer.CustomerTypeEnum.Individual,
                 CustomerName = test_customer_name,
                 CustomerGroup = "Individual",
                 Website = test_customer_website,
