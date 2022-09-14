@@ -65,6 +65,21 @@ namespace GizmoFort.Connector.ERPNext.PublicInterfaces.SubServices.Tests
                 Website = Guid.NewGuid().ToString()
             };
 
+            //
+            //
+            //
+            updated_customer = erp_customer;
+            string date = updated_customer.Object.Data.creation;
+            string date2 = date.Replace(" ", "T") + "+00:00";
+            DateTimeOffset date3 = DateTimeOffset.Parse(date2);
+            updated_customer.Creation = date3;
+            updated_customer.Modified = date3;
+            updated_customer.Website = Guid.NewGuid().ToString();
+            string date4 = updated_customer.Object.Data.creation;
+            //
+            //
+            //
+
             // update first
             customer_service.Update(updated_customer);
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using GizmoFort.Connector.ERPNext.ERPTypes.Selling.Customer;
 using GizmoFort.Connector.ERPNext.PublicTypes;
+using GizmoFort.Connector.ERPNext.Serialization;
 using GizmoFort.Connector.ERPNext.WrapperTypes;
 using Xunit;
 
@@ -89,12 +90,9 @@ namespace GizmoFort.Connector.ERPNext.Tests.TestCases
             client.DeleteObject(DocType.Selling_Customer, test_customer_name);
 
             var option = new FetchListOption();
-            //option.Filters.Add(new ERPFilter(DocType.Selling_Customer,
-            //                                 nameof(ERP_Selling_Customer.CustomerName), //does not work... return CustomerName instead of customer_name
-            //                                 OperatorFilter.Equals,
-            //                                 test_customer_name)) ;
+            var columnInfo = ERPNextConverter.GetColumnInfoByPropertyName<ERP_Selling_Customer>(nameof(ERP_Selling_Customer.CustomerName));
             option.Filters.Add(new ERPFilter(DocType.Selling_Customer,
-                                             ERP_Selling_Customer.GetColumnName(nameof(ERP_Selling_Customer.CustomerName))!,
+                                             columnInfo?.ColumnName!,
                                              OperatorFilter.Equals,
                                              test_customer_name));
 
