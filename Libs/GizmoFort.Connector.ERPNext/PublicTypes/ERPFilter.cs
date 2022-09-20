@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace GizmoFort.Connector.ERPNext.PublicTypes
 {
@@ -7,14 +8,32 @@ namespace GizmoFort.Connector.ERPNext.PublicTypes
         public DocType DocType { get; set; }
         public string TargetField { get; set; }
         public OperatorFilter OperatorFilter { get; set; }
-        public string Operand { get; set; }
+        public object Operand
+        {
+            get
+            {
+                switch (OperatorFilter)
+                {
+                    case OperatorFilter.In:
+                    case OperatorFilter.NotIn:
+                        return _operands;
 
-        public ERPFilter(DocType docType, string targetField, OperatorFilter @operator, string operand)
+                    default:
+                        return _operands[0];
+
+                }
+            }
+        }
+
+        private readonly string[] _operands;
+
+        public ERPFilter(DocType docType, string targetField, OperatorFilter @operator, params string[] operands)
         {
             DocType = docType;
             TargetField = targetField;
-            Operand = operand;
             OperatorFilter = @operator;
+
+            _operands = operands;
         }
     }
 
@@ -26,11 +45,15 @@ namespace GizmoFort.Connector.ERPNext.PublicTypes
         LessThan,
         GreaterThanOrEqual,
         LessThanOrEqual,
+        Like,
+        NotLike,
+        In,
+        NotIn,
     }
 
-    internal class OperatorFilterUtils
+    public class OperatorFilterUtils
     {
-        internal static string ToString(OperatorFilter opFilter) {
+        public static string ToString(OperatorFilter opFilter) {
             switch (opFilter)
             {
                 case OperatorFilter.Equals:
@@ -45,6 +68,14 @@ namespace GizmoFort.Connector.ERPNext.PublicTypes
                     return ">=";
                 case OperatorFilter.LessThanOrEqual:
                     return "<=";
+                case OperatorFilter.Like:
+                    return "like";
+                case OperatorFilter.NotLike:
+                    return "not like";
+                case OperatorFilter.In:
+                    return "in";
+                case OperatorFilter.NotIn:
+                    return "not in";
                 default:
                     throw new ArgumentOutOfRangeException(nameof(opFilter), opFilter, null);
             }
