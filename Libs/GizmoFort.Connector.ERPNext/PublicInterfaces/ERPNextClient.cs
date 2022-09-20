@@ -275,9 +275,9 @@ namespace GizmoFort.Connector.ERPNext.PublicInterfaces
             return data_json.data.Select(x => new ERPObject(docType, ConvertToData(x))).ToList();
         }
 
-        private static List<string> ToFilterObject(ERPFilter filter)
+        public static List<object> ToFilterObject(ERPFilter filter)
         {
-            var result = new List<string>
+            var result = new List<object>
             {
                 filter.DocType.ToString(),
                 filter.TargetField,
