@@ -25,6 +25,13 @@ namespace GizmoFort.Connector.ERPNext.PublicInterfaces.SubServices
             return FromERPObject(result);
         }
 
+        public T? Get(long name)
+        {
+            ERPObject? erp_object = this.client.GetObject(ObjectType, name);
+            if (erp_object == null) return null;
+            return FromERPObject(erp_object);
+        }
+
         public T? Get(string name)
         {
             ERPObject? erp_object = this.client.GetObject(ObjectType, name);
@@ -56,6 +63,11 @@ namespace GizmoFort.Connector.ERPNext.PublicInterfaces.SubServices
         public void Update(T obj)
         {
             this.client.UpdateObject(ObjectType, obj.name, obj.Object);
+        }
+
+        public void Delete(long name)
+        {
+            this.client.DeleteObject(ObjectType, name);
         }
 
         public void Delete(string name)

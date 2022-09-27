@@ -147,6 +147,24 @@ namespace GizmoFort.Connector.ERPNext.PublicInterfaces
             return ParseOneObject(obj.ObjectType, response);
         }
 
+        public ERPObject? GetObject(DocType docType, long name)
+        {
+            LoginIfNeeded();
+
+            var request = new RestRequest($"/api/resource/{docType}/{name.ToString()}", Method.Get);
+
+            var response = this._client.Execute(request);
+
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+
+            AssertResponseIsOK(response);
+
+            return ParseOneObject(docType, response);
+        }
+
         public ERPObject? GetObject(DocType docType, string name)
         {
             LoginIfNeeded();
@@ -184,6 +202,17 @@ namespace GizmoFort.Connector.ERPNext.PublicInterfaces
             AssertResponseIsOK(response);
 
             return ParseOneObject(docType, response);
+        }
+
+        public void DeleteObject(DocType docType, long name)
+        {
+            LoginIfNeeded();
+
+            var request = new RestRequest($"/api/resource/{docType}/{name.ToString()}", Method.Delete);
+
+            var response = this._client.Execute(request);
+
+            AssertResponseIsOK(response);
         }
 
         public void DeleteObject(DocType docType, string name)
